@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kenchats - Login</title>
+<style>
+  :root{
+    --bg: #0B0D12;
+    --surface: #161A22;
+    --surface-2: #1E232D;
+    --accent: #6C5CE7;
+    --accent-hover: #5A4BD6;
+    --accent-warm: #F2B84B;
+    --text: #ECEDEF;
+    --muted: #8B939F;
+    --danger: #FF6B6B;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html, body{
+    width:100%; min-height:100%;
+    background:var(--bg);
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    color:var(--text);
+  }
+  .page{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    padding:20px;
+  }
+  video#bgVideo{
+    position:fixed; top:0; left:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    filter:brightness(0.55);
+    z-index:0;
+  }
+  .overlay{
+    position:fixed; inset:0;
+    background:linear-gradient(180deg, rgba(11,13,18,0.35) 0%, rgba(11,13,18,0.85) 100%);
+    z-index:1;
+  }
+
+  .card{
+    position:relative;
+    z-index:2;
+    width:100%;
+    max-width:380px;
+    background:rgba(22,26,34,0.72);
+    backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px;
+    padding:36px 30px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+  }
+
+  .brand{
+    text-align:center;
+    margin-bottom:26px;
+  }
+  .brand h1{
+    font-size:1.6rem;
+    font-weight:700;
+    letter-spacing:0.02em;
+  }
+  .brand h1 span{ color:var(--accent-warm); }
+  .brand p{
+    margin-top:6px;
+    font-size:0.82rem;
+    color:var(--muted);
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+
+  .field{
+    margin-bottom:16px;
+    opacity:0;
+    transform:translateY(-16px);
+    animation: dropFade 0.55s ease forwards;
+  }
+  .field label{
+    display:block;
+    font-size:0.78rem;
+    color:var(--muted);
+    margin-bottom:6px;
+    letter-spacing:0.03em;
+  }
+  .field input{
+    width:100%;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.1);
+    background:var(--surface-2);
+    color:var(--text);
+    font-size:0.95rem;
+    outline:none;
+    transition:border-color 0.2s ease, background 0.2s ease;
+  }
+  .field input:focus{
+    border-color:var(--accent);
+    background:#232935;
+  }
+
+  @keyframes dropFade{
+    from{ opacity:0; transform:translateY(-16px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .submit-btn{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:10px;
+    background:var(--accent);
+    color:#fff;
+    font-size:0.98rem;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:6px;
+    transition:background 0.2s ease, transform 0.1s ease;
+    opacity:0;
+    transform:translateY(-16px);
+    animation: dropFade 0.55s ease forwards;
+    animation-delay:0.22s;
+  }
+  .submit-btn:hover{ background:var(--accent-hover); }
+  .submit-btn:active{ transform:scale(0.98); }
+  .submit-btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+  .switch-row{
+    text-align:center;
+    margin-top:18px;
+    font-size:0.87rem;
+    color:var(--muted);
+    opacity:0;
+    animation: dropFade 0.55s ease forwards;
+    animation-delay:0.3s;
+  }
+  .switch-row a{
+    color:var(--accent-warm);
+    text-decoration:none;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .switch-row a:hover{ text-decoration:underline; }
+
+  .msg{
+    min-height:18px;
+    font-size:0.82rem;
+    color:var(--danger);
+    text-align:center;
+    margin-top:12px;
+  }
+  .msg.success{ color:#5FD68D; }
+
+  .form-block{ display:none; }
+  .form-block.active{ display:block; }
+
+  .fade-out{
+    animation: fadeOutPage 0.35s ease forwards;
+  }
+  @keyframes fadeOutPage{
+    from{ opacity:1; } to{ opacity:0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page" id="pageRoot">
+  <video id="bgVideo" autoplay muted loop playsinline>
+    <source src="2.mp4" type="video/mp4">
+  </video>
+  <div class="overlay"></div>
+
+  <div class="card">
+    <div class="brand">
+      <h1>Kenchats<span>.</span></h1>
+      <p>masuk untuk mulai ngobrol</p>
+    </div>
+
+    <!-- FORM LOGIN -->
+    <form id="loginForm" class="form-block active">
+      <div class="field"><label>Email</label>
+        <input type="email" id="loginEmail" placeholder="email@kamu.com" required>
+      </div>
+      <div class="field" style="animation-delay:0.08s"><label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="submit-btn" id="loginBtn">Login</button>
+      <div class="msg" id="loginMsg"></div>
+      <div class="switch-row" id="resendRow" style="display:none;">Belum verifikasi email? <a id="resendLink">Kirim ulang</a></div>
+      <div class="switch-row">Belum punya akun? <a id="toRegister">Register</a></div>
+    </form>
+
+    <!-- FORM REGISTER -->
+    <form id="registerForm" class="form-block">
+      <div class="field"><label>Username</label>
+        <input type="text" id="regUsername" placeholder="@usernamekamu" required minlength="3" maxlength="20">
+      </div>
+      <div class="field" style="animation-delay:0.08s"><label>Email</label>
+        <input type="email" id="regEmail" placeholder="email@kamu.com" required>
+      </div>
+      <div class="field" style="animation-delay:0.16s"><label>Password</label>
+        <input type="password" id="regPassword" placeholder="min. 6 karakter" required minlength="6">
+      </div>
+      <button type="submit" class="submit-btn" id="registerBtn">Register</button>
+      <div class="msg" id="registerMsg"></div>
+      <div class="switch-row">Sudah punya akun? <a id="toLogin">Login</a></div>
+    </form>
+
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    sendEmailVerification,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    getDocs,
+    collection,
+    query,
+    where,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCJomifys1cY-9ELI4Ft3Z5N-cLs2YQcVU",
+    authDomain: "nero-fa67c.firebaseapp.com",
+    projectId: "nero-fa67c",
+    storageBucket: "nero-fa67c.firebasestorage.app",
+    messagingSenderId: "349005489687",
+    appId: "1:349005489687:web:c27ce076b4f54da5275e52"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  await setPersistence(auth, browserLocalPersistence);
+
+  // Kalau sudah login & email terverifikasi, langsung ke chat
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      if (user.emailVerified) {
+        window.location.href = 'chat.html';
+      } else {
+        signOut(auth);
+      }
+    }
+  });
+
+  // ---- UI: toggle login/register ----
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  document.getElementById('toRegister').addEventListener('click', () => {
+    loginForm.classList.remove('active');
+    registerForm.classList.add('active');
+  });
+  document.getElementById('toLogin').addEventListener('click', () => {
+    registerForm.classList.remove('active');
+    loginForm.classList.add('active');
+  });
+
+  function setMsg(el, text, success=false){
+    el.textContent = text;
+    el.classList.toggle('success', success);
+  }
+
+  function goHome(){
+    document.getElementById('pageRoot').classList.add('fade-out');
+    setTimeout(()=>{ window.location.href = 'chat.html'; }, 320);
+  }
+
+  function firebaseErrorToText(err){
+    const code = err.code || '';
+    if(code.includes('user-not-found') || code.includes('wrong-password') || code.includes('invalid-credential')){
+      return 'Email atau password salah.';
+    }
+    if(code.includes('email-already-in-use')) return 'Email sudah terdaftar.';
+    if(code.includes('invalid-email')) return 'Format email tidak valid.';
+    if(code.includes('weak-password')) return 'Password minimal 6 karakter.';
+    return 'Terjadi kesalahan: ' + (err.message || code);
+  }
+
+  let pendingUser = null;
+
+  // ---- LOGIN ----
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    const msg = document.getElementById('loginMsg');
+    const resendRow = document.getElementById('resendRow');
+    setMsg(msg, '');
+    resendRow.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Memproses...';
+
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      if (!cred.user.emailVerified) {
+        pendingUser = cred.user;
+        await signOut(auth);
+        setMsg(msg, 'Email belum diverifikasi. Cek inbox Gmail kamu.');
+        resendRow.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Login';
+        return;
+      }
+      setMsg(msg, 'Login berhasil!', true);
+      goHome();
+    } catch (err) {
+      setMsg(msg, firebaseErrorToText(err));
+      btn.disabled = false;
+      btn.textContent = 'Login';
+    }
+  });
+
+  document.getElementById('resendLink').addEventListener('click', async () => {
+    const msg = document.getElementById('loginMsg');
+    if (!pendingUser) return;
+    try {
+      await sendEmailVerification(pendingUser);
+      setMsg(msg, 'Link verifikasi baru sudah dikirim ke email kamu.', true);
+    } catch (err) {
+      setMsg(msg, firebaseErrorToText(err));
+    }
+  });
+
+  function generateKenchatsId(){
+    return String(Math.floor(100000 + Math.random() * 900000));
+  }
+
+  async function generateUniqueKenchatsId(){
+    for (let i = 0; i < 5; i++){
+      const candidate = generateKenchatsId();
+      const q = query(collection(db, 'users'), where('kenchatsId', '==', candidate));
+      const snap = await getDocs(q);
+      if (snap.empty) return candidate;
+    }
+    return generateKenchatsId() + Date.now().toString().slice(-2);
+  }
+
+  // ---- REGISTER ----
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('registerBtn');
+    const msg = document.getElementById('registerMsg');
+    setMsg(msg, '');
+    btn.disabled = true;
+    btn.textContent = 'Memproses...';
+
+    let username = document.getElementById('regUsername').value.trim();
+    if (!username.startsWith('@')) username = '@' + username;
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+
+    try {
+      // cek username sudah ada atau belum
+      const usernameLower = username.toLowerCase();
+      const q = query(collection(db, 'users'), where('username_lower', '==', usernameLower));
+      const existing = await getDocs(q);
+      if(!existing.empty){
+        setMsg(msg, 'Username sudah dipakai, coba yang lain.');
+        btn.disabled = false;
+        btn.textContent = 'Register';
+        return;
+      }
+
+      const kenchatsId = await generateUniqueKenchatsId();
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = cred.user.uid;
+
+      await setDoc(doc(db, 'users', uid), {
+        username: username,
+        username_lower: usernameLower,
+        kenchatsId: kenchatsId,
+        email: email,
+        photo: '',
+        createdAt: serverTimestamp()
+      });
+
+      await sendEmailVerification(cred.user);
+      await signOut(auth);
+
+      setMsg(msg, 'Registrasi berhasil! Cek email kamu untuk verifikasi, lalu login.', true);
+      registerForm.reset();
+    } catch (err) {
+      setMsg(msg, firebaseErrorToText(err));
+      btn.disabled = false;
+      btn.textContent = 'Register';
+    }
+  });
+</script>
+
+</body>
+</html>
