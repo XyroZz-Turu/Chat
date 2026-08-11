@@ -124,11 +124,6 @@
   </video>
   <div class="overlay-gradient"></div>
 
-  <div class="logo-wrap">
-    <h1><span class="dot"></span></h1>
-    <p></p>
-  </div>
-
   <button class="start-btn" id="startBtn">START</button>
 </div>
 
@@ -182,12 +177,12 @@
   // Tampilkan tombol START setelah 3 detik
   setTimeout(()=>{
     startBtn.classList.add('show');
-  }, 6000);
+  }, 10000);
 
   // Setelah 3 detik, otomatis lanjut (flash lalu pindah halaman)
   setTimeout(()=>{
     goToLogin();
-  }, 6000);
+  }, 10000);
 
   // Kalau user klik START duluan, langsung pindah
   startBtn.addEventListener('click', (e)=>{
