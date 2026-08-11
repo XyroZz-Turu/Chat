@@ -120,7 +120,7 @@
 
 <div class="splash" id="splashRoot">
   <video id="bgVideo" autoplay muted loop playsinline>
-    <source src="1.mp4" type="video/mp4">
+    <source src="assets/bg-splash.mp4" type="video/mp4">
   </video>
   <div class="overlay-gradient"></div>
 
@@ -135,7 +135,7 @@
 <div class="flash" id="flashEl"></div>
 
 <button id="musicToggle" class="music-toggle" title="Musik">🔈</button>
-<audio id="bgMusic" src="p.mp3" loop></audio>
+<audio id="bgMusic" src="assets/bgmusic.mp3" loop></audio>
 
 <script>
   (function(){
@@ -182,7 +182,7 @@
   // Tampilkan tombol START setelah 3 detik
   setTimeout(()=>{
     startBtn.classList.add('show');
-  }, 6000);
+  }, 3000);
 
   // Setelah 3 detik, otomatis lanjut (flash lalu pindah halaman)
   setTimeout(()=>{
