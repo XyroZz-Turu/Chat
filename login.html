@@ -166,13 +166,24 @@
   @keyframes fadeOutPage{
     from{ opacity:1; } to{ opacity:0; }
   }
+  .music-toggle{
+    position:fixed; z-index:50;
+    top:16px; left:16px;
+    width:40px; height:40px; border-radius:50%;
+    border:1px solid rgba(255,255,255,0.15);
+    background:rgba(20,22,28,0.55);
+    backdrop-filter:blur(6px);
+    color:#ECEDEF; font-size:1.1rem;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
 </style>
 </head>
 <body>
 
 <div class="page" id="pageRoot">
   <video id="bgVideo" autoplay muted loop playsinline>
-    <source src="2.mp4" type="video/mp4">
+    <source src="assets/bg-login.mp4" type="video/mp4">
   </video>
   <div class="overlay"></div>
 
@@ -214,6 +225,33 @@
 
   </div>
 </div>
+
+<button id="musicToggle" class="music-toggle" title="Musik">🔈</button>
+<audio id="bgMusic" src="assets/bgmusic.mp3" loop></audio>
+
+<script>
+  (function(){
+    const audio = document.getElementById('bgMusic');
+    const btn = document.getElementById('musicToggle');
+    const KEY = 'kenchats_music_on';
+
+    function updateIcon(playing){ btn.textContent = playing ? '🔊' : '🔈'; }
+
+    if (localStorage.getItem(KEY) === 'on'){
+      audio.play().then(()=>updateIcon(true)).catch(()=>updateIcon(false));
+    }
+
+    btn.addEventListener('click', () => {
+      if (audio.paused){
+        audio.play().then(()=>{ localStorage.setItem(KEY,'on'); updateIcon(true); }).catch(()=>{});
+      } else {
+        audio.pause();
+        localStorage.setItem(KEY,'off');
+        updateIcon(false);
+      }
+    });
+  })();
+</script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
