@@ -53,27 +53,30 @@
   }
   .logout-btn:hover{ background:rgba(255,107,107,0.1); }
 
-  nav.bottomnav{ display:flex; border-top:1px solid rgba(255,255,255,0.06); background:var(--surface); }
-  nav.bottomnav a{ flex:1; text-align:center; padding:12px 0; color:var(--muted); text-decoration:none; font-size:0.78rem; }
-  nav.bottomnav a.active{ color:var(--accent-warm); }
-  nav.bottomnav .ic{ font-size:1.2rem; display:block; margin-bottom:2px; }
-
-  .music-toggle{
-    position:fixed; z-index:50;
-    top:14px; right:14px;
-    width:38px; height:38px; border-radius:50%;
-    border:1px solid rgba(255,255,255,0.15);
-    background:rgba(20,22,28,0.55);
-    backdrop-filter:blur(6px);
-    color:var(--text); font-size:1.05rem;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer;
+  .section-label{ font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; }
+  .empty-hint{ text-align:center; color:var(--muted); font-size:0.85rem; margin-top:8px; }
+  .blocklist-item{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px; border-radius:10px; background:var(--surface-2); margin-bottom:8px; margin-top:10px;
+  }
+  .blocklist-item button{
+    padding:6px 12px; border-radius:999px; border:none; background:var(--accent);
+    color:#fff; font-size:0.78rem; cursor:pointer;
   }
 
-  /* ---- Modal Edit ---- */
+  nav.bottomnav{ display:flex; border-top:1px solid rgba(255,255,255,0.06); background:var(--surface); }
+  nav.bottomnav a{ position:relative; flex:1; text-align:center; padding:12px 0; color:var(--muted); text-decoration:none; font-size:0.78rem; }
+  nav.bottomnav a.active{ color:var(--accent-warm); }
+  nav.bottomnav .ic{ font-size:1.2rem; display:block; margin-bottom:2px; position:relative; }
+  .nav-dot{
+    position:absolute; top:-2px; right:calc(50% - 15px);
+    width:9px; height:9px; border-radius:50%; background:#FF6B6B;
+    border:2px solid var(--bg); display:none;
+  }
+
   .modal-overlay{
     position:fixed; inset:0; background:rgba(0,0,0,0.6);
-    display:none; align-items:center; justify-content:center; z-index:20; padding:20px;
+    display:none; align-items:center; justify-content:center; z-index:30; padding:20px;
   }
   .modal-overlay.show{ display:flex; }
   .modal-box{
@@ -97,13 +100,6 @@
   .btn-save:disabled{ opacity:0.6; }
   .modal-msg{ min-height:16px; font-size:0.8rem; color:var(--danger); text-align:center; margin-top:10px; }
   .modal-msg.success{ color:#5FD68D; }
-
-  .photo-pick-row{ text-align:center; margin-bottom:16px; }
-  .photo-pick-row .avatar-big{ width:70px; height:70px; margin:0 auto 10px; font-size:1.6rem; }
-  .pick-photo-btn{
-    padding:8px 16px; border-radius:999px; border:1px solid rgba(255,255,255,0.15);
-    background:var(--surface-2); color:var(--text); font-size:0.82rem; cursor:pointer;
-  }
 </style>
 </head>
 <body>
@@ -126,55 +122,29 @@
     </div>
 
     <button class="edit-btn" id="openEditBtn">Edit Profil</button>
+    <button class="edit-btn" id="changePwBtn">Ubah Password</button>
+    <div class="modal-msg" id="pwMsg" style="margin-bottom:10px;"></div>
     <button class="logout-btn" id="logoutBtn">Logout</button>
+
+    <div class="section-label" style="text-align:left; margin-top:22px;">User Diblokir</div>
+    <div id="blockedList"></div>
   </div>
 
   <nav class="bottomnav">
-    <a href="chat.html"><span class="ic">💬</span>Chat</a>
-    <a href="search.html"><span class="ic">🔍</span>Cari</a>
+    <a href="chat.html"><span class="ic">💬<span class="nav-dot" id="dotChat"></span></span>Chat</a>
+    <a href="status.html"><span class="ic">✨</span>Status</a>
     <a href="profile.html" class="active"><span class="ic">👤</span>Profil</a>
   </nav>
 </div>
 
-<button id="musicToggle" class="music-toggle" title="Musik">🔈</button>
-<audio id="bgMusic" src="assets/bgmusic.mp3" loop></audio>
-
-<script>
-  (function(){
-    const audio = document.getElementById('bgMusic');
-    const btn = document.getElementById('musicToggle');
-    const KEY = 'kenchats_music_on';
-
-    function updateIcon(playing){ btn.textContent = playing ? '🔊' : '🔈'; }
-
-    if (localStorage.getItem(KEY) === 'on'){
-      audio.play().then(()=>updateIcon(true)).catch(()=>updateIcon(false));
-    }
-
-    btn.addEventListener('click', () => {
-      if (audio.paused){
-        audio.play().then(()=>{ localStorage.setItem(KEY,'on'); updateIcon(true); }).catch(()=>{});
-      } else {
-        audio.pause();
-        localStorage.setItem(KEY,'off');
-        updateIcon(false);
-      }
-    });
-  })();
-</script>
-
-<!-- MODAL EDIT PROFIL -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <h2>Edit Profil</h2>
-
     <div class="field">
       <label>Username</label>
       <input type="text" id="editUsername" placeholder="@usernamekamu" maxlength="20">
     </div>
-
     <div class="modal-msg" id="editMsg"></div>
-
     <div class="modal-actions">
       <button type="button" class="btn-cancel" id="cancelEditBtn">Batal</button>
       <button type="button" class="btn-save" id="saveEditBtn">Simpan</button>
@@ -184,9 +154,10 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs
+    getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs,
+    onSnapshot, updateDoc, serverTimestamp, arrayRemove
   } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -201,8 +172,28 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  function startPresence(myUid){
+    const ref = doc(db, 'users', myUid);
+    const beat = () => updateDoc(ref, { lastSeen: serverTimestamp() }).catch(()=>{});
+    beat();
+    setInterval(beat, 25000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) beat(); });
+    window.addEventListener('beforeunload', beat);
+  }
+  async function unblockUser(myUid, otherUid){
+    await updateDoc(doc(db, 'users', myUid), { blockedUsers: arrayRemove(otherUid) });
+  }
+
+  function maskEmail(email){
+    if (!email || !email.includes('@')) return email;
+    const [local, domain] = email.split('@');
+    if (local.length <= 2) return local[0] + '*'.repeat(Math.max(1, local.length - 1)) + '@' + domain;
+    return local[0] + '*'.repeat(local.length - 2) + local[local.length - 1] + '@' + domain;
+  }
+
   let currentUid = null;
   let currentData = {};
+  let currentEmail = '';
 
   function renderAvatar(el, username, photoUrl){
     if (photoUrl){
@@ -217,32 +208,96 @@
     currentData = snap.exists() ? snap.data() : {};
     const username = currentData.username || user.email;
     const email = currentData.email || user.email;
+    currentEmail = email;
     const joined = currentData.createdAt?.toDate
       ? currentData.createdAt.toDate().toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric' })
       : '-';
 
     renderAvatar(document.getElementById('avatarBig'), username, currentData.photo);
     document.getElementById('pUsername').textContent = username;
-    document.getElementById('pEmail').textContent = email;
+    document.getElementById('pEmail').textContent = maskEmail(email);
     document.getElementById('rowUsername').textContent = username;
     document.getElementById('rowId').textContent = currentData.kenchatsId || '-';
-    document.getElementById('rowEmail').textContent = email;
+    document.getElementById('rowEmail').textContent = maskEmail(email);
     document.getElementById('rowVerified').textContent = user.emailVerified ? '✅ Terverifikasi' : '⚠️ Belum verifikasi';
     document.getElementById('rowJoined').textContent = joined;
+
+    renderBlockedList();
+  }
+
+  async function renderBlockedList(){
+    const listEl = document.getElementById('blockedList');
+    const blocked = currentData.blockedUsers || [];
+    if (blocked.length === 0){
+      listEl.innerHTML = '<div class="empty-hint">Belum ada user yang diblokir.</div>';
+      return;
+    }
+    listEl.innerHTML = '';
+    for (const uid of blocked){
+      const snap = await getDoc(doc(db, 'users', uid));
+      const name = snap.exists() ? (snap.data().username || 'User') : 'User (terhapus)';
+      const row = document.createElement('div');
+      row.className = 'blocklist-item';
+      row.innerHTML = `<span>${name}</span>`;
+      const btn = document.createElement('button');
+      btn.textContent = 'Buka Blokir';
+      btn.addEventListener('click', async () => {
+        await unblockUser(currentUid, uid);
+        currentData.blockedUsers = (currentData.blockedUsers || []).filter(u => u !== uid);
+        renderBlockedList();
+      });
+      row.appendChild(btn);
+      listEl.appendChild(row);
+    }
   }
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = 'login.html'; return; }
     currentUid = user.uid;
     await loadProfile(user);
+    startPresence(currentUid);
+    watchUnreadBadge();
   });
+
+  function watchUnreadBadge(){
+    const dot = document.getElementById('dotChat');
+    const q = query(collection(db, 'chats'), where('participants', 'array-contains', currentUid));
+    onSnapshot(q, (snap) => {
+      let unread = false;
+      snap.forEach(d => {
+        const c = d.data();
+        if (!c.lastMessage || c.lastSenderId === currentUid) return;
+        const lastRead = c.lastRead && c.lastRead[currentUid] ? c.lastRead[currentUid].toMillis() : 0;
+        const updated = c.updatedAt && c.updatedAt.toMillis ? c.updatedAt.toMillis() : 0;
+        if (updated > lastRead) unread = true;
+      });
+      dot.style.display = unread ? 'block' : 'none';
+    });
+  }
 
   document.getElementById('logoutBtn').addEventListener('click', async () => {
     await signOut(auth);
     window.location.href = 'login.html';
   });
 
-  // ---- Modal Edit Profil ----
+  document.getElementById('changePwBtn').addEventListener('click', async () => {
+    const pwMsg = document.getElementById('pwMsg');
+    const btn = document.getElementById('changePwBtn');
+    if (!currentEmail){ pwMsg.textContent = 'Email gak ditemukan.'; return; }
+    if (!confirm(`Kirim link ubah password ke ${currentEmail}?`)) return;
+    btn.disabled = true;
+    try {
+      await sendPasswordResetEmail(auth, currentEmail);
+      pwMsg.textContent = 'Link ubah password sudah dikirim, cek email kamu.';
+      pwMsg.classList.add('success');
+    } catch (err) {
+      pwMsg.textContent = 'Gagal: ' + err.message;
+      pwMsg.classList.remove('success');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   const editModal = document.getElementById('editModal');
   const editMsg = document.getElementById('editMsg');
 
@@ -272,7 +327,6 @@
       if (newUsername && !newUsername.startsWith('@')) newUsername = '@' + newUsername;
       const updates = {};
 
-      // Username berubah? cek keunikannya dulu
       if (newUsername && newUsername !== currentData.username){
         const usernameLower = newUsername.toLowerCase();
         const q = query(collection(db, 'users'), where('username_lower', '==', usernameLower));
